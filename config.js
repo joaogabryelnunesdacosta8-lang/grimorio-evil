@@ -1,2 +1,2 @@
-NEXT_PUBLIC_SUPABASE_URL=https://wogcdohairitzdlzecnu.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_On6xz5w5vTSahqXLLILyxg_u60mvX-V
+export const SUPABASE_URL = 'COLE_A_URL_DO_PROJETO';
+export const SUPABASE_KEY = 'COLE_A_CHAVE_PUBLICAVEL';
