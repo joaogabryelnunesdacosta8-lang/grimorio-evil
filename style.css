@@ -385,3 +385,23 @@ footer {
         transform: none;
     }
 }
+#classFilters button::before,
+#classFilters button::after {
+    content: none !important;
+}
+
+#classFilters button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 90px;
+}
+
+.class-icon {
+    width: 42px;
+    height: 42px;
+    object-fit: contain;
+    display: block;
+}
