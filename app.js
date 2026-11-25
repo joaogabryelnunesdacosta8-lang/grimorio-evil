@@ -6,11 +6,27 @@ const msg = t => $('status').textContent = t;
 
 const cats = [
     'Itens','Consumíveis','Monstros','Mapas',
-    'Habilidades','Dicas','Missões','Chefes','Atualizações'
+    'Habilidades','Dicas','Missões','Chefes','Runas','Atualizações'
 ];
 
 const classes = ['Todos','Mago','Assassino','Guerreiro'];
+const subcategories = [
+    'Todos',
+    'Equipamentos',
+    'Materiais de reforço'
+];
 
+const rarities = [
+    'Todos',
+    'Comum',
+    'Raro',
+    'Épico',
+    'Lendário',
+    'Mítico'
+];
+
+let subcategoryFilter = 'Todos';
+let rarityFilter = 'Todos';
 let db, user, admin = false, rows = [];
 let filter = 'Todos', classFilter = 'Todos';
 let editing = null, recovering = false;
@@ -110,9 +126,47 @@ function clear() {
     editing = null;
     $('editor').reset();
 }
+function createFilterButtons(id, values, onSelect) {
+    for (const value of values) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = value;
+        b.dataset.value = value;
 
+        b.onclick = () => {
+            onSelect(value);
+            render();
+        };
+
+        $(id).append(b);
+    }
+}
+
+createFilterButtons(
+    'subcategoryFilters',
+    subcategories,
+    value => subcategoryFilter = value
+);
+
+createFilterButtons(
+    'rarityFilters',
+    rarities,
+    value => rarityFilter = value
+);
 function render() {
-    for (const b of $('categories').children) {
+    for (const b of $('subcategoryFilters').children) {
+        b.classList.toggle(
+            'active',
+            b.dataset.value === subcategoryFilter
+        );
+    }
+
+    for (const b of $('rarityFilters').children) {
+        b.classList.toggle(
+            'active',
+            b.dataset.value === rarityFilter
+        );
+    }    for (const b of $('categories').children) {
         b.classList.toggle('active', b.textContent === filter);
     }
 
@@ -134,7 +188,10 @@ function render() {
             (classFilter === 'Todos' ||
              rc.includes('Todos') ||
              rc.includes(classFilter)) &&
-            (r.title + ' ' + r.content)
+         (subcategoryFilter === 'Todos' ||
+ r.subcategory === subcategoryFilter) &&
+(rarityFilter === 'Todos' ||
+ r.rarity === rarityFilter) &&   (r.title + ' ' + r.content)
                 .toLocaleLowerCase('pt-BR').includes(q)
         );
     });
@@ -147,7 +204,7 @@ function render() {
         a.append(h);
 
         const s = document.createElement('small');
-        s.textContent = r.category;
+      s.textContent = [r.category, r.subcategory].filter(Boolean).join(' • ');
         a.append(s);
 
         const tag = document.createElement('p');
@@ -156,7 +213,13 @@ function render() {
             ? 'Todas as classes'
             : getClasses(r).join(' • ');
         a.append(tag);
-
+if (r.rarity) {
+    const rarity = document.createElement('p');
+    rarity.className = 'rarity-tag';
+    rarity.dataset.rarity = r.rarity;
+    rarity.textContent = '◆ ' + r.rarity;
+    a.append(rarity);
+}
         if (r.image_path) {
             const im = document.createElement('img');
             im.alt = r.title;
@@ -185,7 +248,8 @@ function render() {
                 $('title').value = r.title;
                 $('category').value = r.category;
                 $('content').value = r.content;
-
+$('subcategory').value = r.subcategory ?? '';
+$('rarity').value = r.rarity ?? '';
                 const rc = getClasses(r);
 
                 for (const input of classInputs) {
@@ -385,7 +449,9 @@ if (!SUPABASE_URL.startsWith('https://')) {
             category: $('category').value,
             content: $('content').value,
             image_path: path,
-            classes: selected
+            classes: selected,
+subcategory: $('subcategory').value,
+rarity: $('rarity').value
         };
 
         try {
