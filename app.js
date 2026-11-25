@@ -58,7 +58,23 @@ for (const c of classes) {
     const b = document.createElement('button');
     b.type = 'button';
     b.dataset.class = c;
-    b.textContent = c;
+    const icons = {
+    Mago: './mago.png',
+    Assassino: './assassino.png',
+    Guerreiro: './guerreiro.png'
+};
+
+if (icons[c]) {
+    const img = document.createElement('img');
+    img.src = icons[c];
+    img.alt = '';
+    img.className = 'class-icon';
+    b.appendChild(img);
+}
+
+const label = document.createElement('span');
+label.textContent = c;
+b.appendChild(label);
     b.onclick = () => {
         classFilter = c;
         render();
