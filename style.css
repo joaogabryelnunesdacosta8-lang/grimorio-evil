@@ -405,3 +405,31 @@ footer {
     object-fit: contain;
     display: block;
 }
+/* Cores das raridades */
+
+.rarity-tag {
+    font-weight: bold;
+    font-size: 14px;
+    margin: 8px 0;
+    letter-spacing: 1px;
+}
+
+.rarity-tag[data-rarity="Comum"] {
+    color: #9CA3AF;
+}
+
+.rarity-tag[data-rarity="Raro"] {
+    color: #3498FF;
+}
+
+.rarity-tag[data-rarity="Épico"] {
+    color: #A855F7;
+}
+
+.rarity-tag[data-rarity="Lendário"] {
+    color: #EAB308;
+}
+
+.rarity-tag[data-rarity="Mítico"] {
+    color: #EF4444;
+}
