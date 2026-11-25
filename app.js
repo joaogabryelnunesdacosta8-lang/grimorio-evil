@@ -14,6 +14,33 @@ function render(){for(const b of $('categories').children)b.classList.toggle('ac
 async function load(){rows=check(await db.from('entries').select('*').order('created_at',{ascending:false}));render()}
 async function session(s){user=s?.user;admin=false;$('auth').hidden=!!user;$('logout').hidden=!user;$('library').hidden=!user||recovering;$('recovery').hidden=!recovering;$('admin').hidden=true;$('identity').textContent=user?'Conta conectada':'';if(!user){rows=[];clear();$('entries').replaceChildren();return}if(recovering)return;admin=check(await db.rpc('is_admin'));$('admin').hidden=!admin;await load()}
 if(!SUPABASE_URL.startsWith('https://')){msg('Site ainda não conectado ao banco de dados. Siga o guia de publicação.');for(const b of $('auth').querySelectorAll('button'))b.disabled=true}else{
-db=createClient(SUPABASE_URL,SUPABASE_KEY);db.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY')recovering=true;setTimeout(()=>session(s).catch(fail),0)});
+db = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+    }
+});
+
+db.auth.onAuthStateChange((event, s) => {
+    if (event === 'PASSWORD_RECOVERY') recovering = true;
+    setTimeout(() => session(s).catch(fail), 0);
+});
+
+db.auth.getSession().then(({ data, error }) => {
+    if (error) {
+        fail(error);
+        return;
+    }
+    session(data.session).catch(fail);
+}).catch(fail);
+
+const params = new URLSearchParams(
+    location.hash.slice(1) || location.search
+);
+
+if (params.has('error_description')) {
+    msg(params.get('error_description'));
+}
 action('google',async()=>check(await db.auth.signInWithOAuth({provider:'google',options:{redirectTo:redirect}})));action('login',async()=>{check(await db.auth.signInWithPassword({email:$('email').value,password:$('password').value}));msg('Sessão iniciada.')},'submit');action('signup',async()=>{check(await db.auth.signUp({email:$('email').value,password:$('password').value,options:{emailRedirectTo:redirect}}));msg('Confira seu e-mail para confirmar o cadastro.')});action('reset',async()=>{check(await db.auth.resetPasswordForEmail($('email').value,{redirectTo:redirect}));msg('Confira seu e-mail.')});action('newpass',async()=>{check(await db.auth.updateUser({password:$('newpassword').value}));recovering=false;await session((await db.auth.getSession()).data.session);msg('Senha atualizada.')},'submit');action('logout',async()=>{recovering=false;check(await db.auth.signOut());msg('Sessão encerrada.')});action('cancel',clear);$('search').oninput=render;
 action('editor',async()=>{if(!admin)return;let path=editing?.image_path||null;const old=path,f=$('picture').files[0];if(f){if(!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>5*1024*1024)throw Error('Use PNG, JPEG ou WebP de até 5 MB.');path=crypto.randomUUID();check(await db.storage.from('images').upload(path,f,{contentType:f.type}))}const data={title:$('title').value,category:$('category').value,content:$('content').value,image_path:path};try{check(await (editing?db.from('entries').update(data).eq('id',editing.id):db.from('entries').insert(data)))}catch(e){if(f)await db.storage.from('images').remove([path]);throw e}if(f&&old)await db.storage.from('images').remove([old]);clear();await load();msg('Conteúdo salvo.')},'submit');}
