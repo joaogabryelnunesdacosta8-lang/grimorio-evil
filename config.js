@@ -1,2 +1,2 @@
-export const SUPABASE_URL = 'COLE_A_URL_DO_PROJETO';
-export const SUPABASE_KEY = 'COLE_A_CHAVE_PUBLICAVEL';
+export const SUPABASE_URL = 'https://wogcdohairitzdlzecnu.supabase.co';
+export const SUPABASE_KEY = 'sb_publishable_On6xz5w5vTSahqXLLILyxg_u60mvX-V';
